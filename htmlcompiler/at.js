@@ -7764,7 +7764,7 @@
         var a = Ew(),
             a = (0, l.jQuery)("#" + a.dk).val().split(" ").join("");
         tj || (tj = (new kj).d());
-        var b = "/ats/" + a,
+        var b = a,
             d = ok(),
             b = lj(b, d),
             d = (new Cx).d(),

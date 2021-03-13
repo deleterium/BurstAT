@@ -15,7 +15,7 @@ Table showing machine instructions, operational codes, usage and comments. Examp
 | 0x07 | SUB | SUB @addr1 $addr2 | SUB_DAT | addr1,addr2 | @addr1 -= $addr2 |
 | 0x08 | MUL | MUL @addr1 $addr2 | MUL_DAT | addr1,addr2 | @addr1 *= $addr2 |
 | 0x09 | DIV | DIV @addr1 $addr2 | DIV_DAT | addr1,addr2 | @addr1 /= $addr2 |
-| 0x0a | BOR | BOR @addr1 $addr2 | BOR_DAT | addr1,addr2 | @addr1 |= $addr2 |
+| 0x0a | BOR | BOR @addr1 $addr2 | BOR_DAT | addr1,addr2 | @addr1 \|= $addr2 |
 | 0x0b | AND | AND @addr1 $addr2 | AND_DAT | addr1,addr2 | @addr1 &= $addr2 |
 | 0x0c | XOR | XOR @addr1 $addr2 | XOR_DAT | addr1,addr2 | @addr1 ^= $addr2 |
 | 0x0d | NOT | DEC @addr | NOT_DAT | addr | @addr = ~$addr (bitwise not) |

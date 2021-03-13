@@ -36,8 +36,8 @@ Functions to be used with `FUN` instruction, hex codes `0x32` to `0x37`.
 | 0x0126 | check_B_Is_Zero | FUN @addr check_B_Is_Zero | Check_B_Is_Zero | @addr to 1 if B is zero of 0 if it is not (i.e. bool) |
 | 0x0127 | check_A_equals_B | FUN @addr check_A_equals_B | Check_A_Equals_B | @addr to bool if A is equal to B |
 | 0x0128 | swap_A_and_B | FUN swap_A_and_B | Swap_A_and_B | swap the values of A and B |
-| 0x0129 | OR_A_with_B | FUN OR_A_with_B | OR_A_with_B | sets A to A | B (bitwise OR) |
-| 0x012a | OR_B_with_A | FUN OR_B_with_A | OR_B_with_A | sets B to B | A (bitwise OR) |
+| 0x0129 | OR_A_with_B | FUN OR_A_with_B | OR_A_with_B | sets A to A \| B (bitwise OR) |
+| 0x012a | OR_B_with_A | FUN OR_B_with_A | OR_B_with_A | sets B to B \| A (bitwise OR) |
 | 0x012b | AND_A_with_B | FUN AND_A_with_B | AND_A_with_B | sets A to A & B (bitwise AND) |
 | 0x012c | AND_B_with_A | FUN AND_B_with_A | AND_B_with_A | sets B to B & A (bitwise AND) |
 | 0x012d | XOR_A_with_B | FUN XOR_A_with_B | XOR_A_with_B | sets A to A ^ B (bitwise XOR) |

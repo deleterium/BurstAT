@@ -10,7 +10,7 @@ Many years ago a javascript compiler, know as [Smart Contractor AT Tools](./html
 Take a brief look at [official page documentation for AT](http://ciyam.org/at/). It is a bit intimidating at start, but is a great reference once you have started. Check also [burstcoin page for miners](https://www.burst-coin.org/introduction/for-miners/) and get more information, better!
 
 ## Examples
-Many examples can be found [here](./examples), and you must take advantage of them! Please note that some function names were implemented differently in Smart Contractor. Check a list with all [opCodes](./docs/InstructionsTable.md) and [function names](./docs/FunctionsTable.md).
+Many examples can be found [here](./examples), and you must take advantage of them! Please note that some function names were implemented differently in Smart Contractor. Check a list with all [instructions](./docs/InstructionsTable.md) and [API functions](./docs/FunctionsTable.md).
 
 ## Starting guide
 Of course you will need a full node running Burstcoin to start testing. I assume you already know how to create an address, run a full node and mining, because they will be needed for your tests. If you are still there the next steps are:

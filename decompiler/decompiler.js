@@ -1,5 +1,9 @@
 
-var opCode = {
+const VarName = "var";
+const LabelName = "lab";
+const FunctionName = "Function"
+
+const opCode = {
     0x01: "SET",
     0x02: "SET",
     0x03: "CLR",
@@ -50,7 +54,7 @@ var opCode = {
 };
 
 
-var funcNames = {
+const funcNames = {
     0x0100: "get_A1",
     0x0101: "get_A2",
     0x0102: "get_A3",
@@ -121,6 +125,8 @@ var funcNames = {
     0x0406: "add_Minutes_to_Timestamp"
 }
 
+var  functionLabels = [ ];
+var  branchLabels = [ ];
 
 function DecompileCode()
 {
@@ -182,9 +188,68 @@ function PrintReadableString(arrayOfStrings)
     {
         stringConcat += opCodeToText(arrayOfStrings[i]) + "\n";
     }
+
+    // Check post-processing options
+    var chkBox = document.getElementById('post-process');
+    var keepAddr = document.getElementById('keep-address');
+    if (chkBox.checked)
+    {
+        var lines = stringConcat.split("\n");
+        stringConcat = "";
+        functionLabels.sort();
+        branchLabels.sort();
+        for (i = 0; i < lines.length; i++)
+        {
+            stringConcat += adjustLabels(lines[i], keepAddr.checked) + "\n";
+        }
+    }    
     outputHTML.innerHTML = stringConcat;
 }
 
+/* Post-processing turning all jumps and branches from hex address
+ *   to friendly names, optionally keeping address location */
+function adjustLabels(decompLine, keep_address)
+{
+    var variables = decompLine.split(" ");
+    var ret = "";
+    var newLineAtStart = false;
+    
+    //Checks if current addres is a function starting point and write a friendly name
+    var position = functionLabels.indexOf(variables[0])
+    if (position != -1) {
+        ret += FunctionName + position.toString().padStart(2, '0') + ":\n";
+        newLineAtStart = true;
+    }
+    //Checks if current addres is refered by jumps and write a friendly name
+    position = branchLabels.indexOf(variables[0]);
+    if (position != -1)
+        ret += LabelName + position.toString().padStart(2, '0') + ":\n";
+    //process all fields from current line and replaces hex adr to friendly names
+    variables.forEach(function (value, index, array){
+            if (index == 0) {
+                if  (keep_address) 
+                    ret += value + " ";
+            } else {
+                position = functionLabels.indexOf(value.slice(1));
+                if (position != -1){
+                    ret += ":" + FunctionName + position.toString().padStart(2, '0') + " ";
+                    return;
+                }
+                position = branchLabels.indexOf(value.slice(1));
+                if (position != -1) {
+                    ret += ":" + LabelName + position.toString().padStart(2, '0') + " ";
+                    return;
+                }
+                ret += value + " ";
+            }
+        });
+    //returns processed string
+    if (newLineAtStart)
+        return ("\n" + ret.trim()); //remove trailing space
+    return ret.trim();
+}
+
+        
 function opCodeToText(opCodeAndVariable)
 {
     var variables = opCodeAndVariable.split(" ");
@@ -194,10 +259,11 @@ function opCodeToText(opCodeAndVariable)
     var arg2 = parseInt(variables[3], 16);
     var arg3 = parseInt(variables[4], 16);
     var funCodeNum = arg1;
+    var jumpAddress = "";
     switch ( opCodeNum ) {
         case 0x01:
             ret += opCode[ opCodeNum ] + 
-                    " @var" + arg1 +
+                    " @" + VarName + arg1 +
                     " #" + variables[3];
             break;
         case 0x02:
@@ -212,8 +278,8 @@ function opCodeToText(opCodeAndVariable)
         case 0x17:
         case 0x18:
             ret += opCode[ opCodeNum ] + 
-                    " @var" + arg1 +
-                    " $var" + arg2;
+                    " @" + VarName + arg1 +
+                    " $" + VarName + arg2;
             break;
         case 0x03:
         case 0x04:
@@ -221,30 +287,39 @@ function opCodeToText(opCodeAndVariable)
         case 0x0d:
         case 0x11:
             ret += opCode[opCodeNum] +
-                    " @var" + arg1;
+                    " @" + VarName + arg1;
             break;
         case 0x0e:
             ret += opCode[opCodeNum] +
-                    " @var" + arg1 +
-                    " $($var"+arg2+")";
+                    " @" + VarName + arg1 +
+                    " $($" + VarName + arg2 + ")";
             break;
         case 0x0f:
             ret += opCode[opCodeNum] +
-                    " @var" + arg1 +
-                    " $($var" + arg2 + " + $var" + arg3 + ")";
+                    " @" + VarName + arg1 +
+                    " $($" + VarName + arg2 + " + $" + VarName + arg3 + ")";
             break;
         case 0x10:
         case 0x25:
         case 0x26:
         case 0x27:
             ret += opCode[opCodeNum] +
-                    " $var" + arg1;
+                    " $" + VarName + arg1;
             break;
         case 0x12:
+            jumpAddress = "0x" + arg1.toString(16).padStart(4, '0');
+            if (functionLabels.indexOf(jumpAddress) == -1)
+                functionLabels.push(jumpAddress);
+            ret += opCode[opCodeNum] +
+                    " :" + jumpAddress;
+            break;
         case 0x1a:
         case 0x2b:
+            jumpAddress = "0x" + arg1.toString(16).padStart(4, '0')
+            if (branchLabels.indexOf(jumpAddress) == -1)
+                branchLabels.push(jumpAddress);
             ret += opCode[opCodeNum] +
-                    " :0x"+arg1.toString(16).padStart(4, '0');
+                    " :" + jumpAddress;
             break;
         case 0x13:
         case 0x28:
@@ -255,21 +330,24 @@ function opCodeToText(opCodeAndVariable)
             break;
         case 0x14:
             ret += opCode[opCodeNum] +
-                    " @($var" + arg1 + ") $var" + arg2;
+                    " @($" + VarName + arg1 + ") $" + VarName + arg2;
             break;
         case 0x15:
             ret += opCode[opCodeNum] +
-                    " @($var" + arg1 + " + $var" + arg2 + ")" + 
-                    " $var"+arg3;
+                    " @($" + VarName + arg1 + " + $" + VarName + arg2 + ")" + 
+                    " $" + VarName + arg3;
             break;
         case 0x1b:
         case 0x1e:
             if (arg2 > 0x7f) //negative index
                 arg2 -= 0x100;
-            var jmp_address = parseInt(variables[0], 16) + arg2;
+            jmp_address = "0x" + (parseInt(variables[0], 16) + arg2).toString(16).padStart(4, '0');
+            
+            if (branchLabels.indexOf(jmp_address) == -1)
+                branchLabels.push(jmp_address);
             ret += opCode[ opCodeNum ] + 
-                    " $var" + arg1 + 
-                    " :0x" + jmp_address.toString(16).padStart(4, '0');
+                    " $" + VarName + arg1 + 
+                    " :" + jmp_address;
             break;
         case 0x1f:
         case 0x20:
@@ -279,11 +357,13 @@ function opCodeToText(opCodeAndVariable)
         case 0x24:
             if (arg3 > 0x7f) //negative index
                 arg3 -= 0x100;
-            var jmp_address = parseInt(variables[0], 16) + arg3;
+            var jmp_address = "0x" + (parseInt(variables[0], 16) + arg3).toString(16).padStart(4, '0');
+            if (branchLabels.indexOf(jmp_address) == -1)
+                branchLabels.push(jmp_address);
             ret += opCode[ opCodeNum ] +
-                    " $var" + arg1 +
-                    " $var" + arg2 +
-                    " :0x" + jmp_address.toString(16).padStart(4, '0');
+                    " $" + VarName + arg1 +
+                    " $" + VarName + arg2 +
+                    " :" + jmp_address;
             break;
         case 0x32:
             ret += opCode[ opCodeNum ] +
@@ -292,31 +372,31 @@ function opCodeToText(opCodeAndVariable)
         case 0x33:
             ret += opCode[ opCodeNum ] +
                     " " + funcNames[ funCodeNum ] +
-                    " $var" + arg2;
+                    " $" + VarName + arg2;
             break;
         case 0x34:
             ret += opCode[ opCodeNum ] +
                     " " + funcNames[ funCodeNum ] +
-                    " $var" + arg2 +
-                    " $var" + arg3;
+                    " $" + VarName + arg2 +
+                    " $" + VarName + arg3;
             break;
         case 0x35:
             ret += opCode[ opCodeNum ] +
-                    " @var" + arg2 +
+                    " @" + VarName + arg2 +
                     " " + funcNames[ funCodeNum ];
             break;
         case 0x36:
             ret += opCode[ opCodeNum ] +
-                    " @var" + arg2 +
+                    " @" + VarName + arg2 +
                     " " + funcNames[ funCodeNum ] +
-                    " $var" + arg3;
+                    " $" + VarName + arg3;
             break;
         case 0x37:
             ret += opCode[ opCodeNum ] +
-                    " @var" + arg2 +
+                    " @" + VarName + arg2 +
                     " " + funcNames[ funCodeNum ] +
-                    " $var" + arg3 +
-                    " $var" + parseInt(variables[5], 16);
+                    " $" + VarName + arg3 +
+                    " $" + VarName + parseInt(variables[5], 16);
             break;
     }
 

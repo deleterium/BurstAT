@@ -2,6 +2,7 @@
 This document explains how to use API functions in Smart Contractor AT Assembler and the expected behaviour in burstcoin stable branch (now  BRS 2.5 ).
 
 ## 0x0100..0x01ff - Get/Set functions for "pseudo registers"
+A and B are 256-bit special variables called pseudo-registers. Regular variables are 64-bit, so you will need 4 of them to fill a pseudo-register. To make this possible, A and B can be set in parts, 64-bit each one. Ex: if A is value 0x1111111122222222333333334444444455555555666666667777777788888888 then A1 is 0x7777777788888888, A2 0x5555555566666666, A3 0x3333333344444444 and A4 0x1111111122222222.
 
 **0x0100: get_A1** `FUN @addr get_A1` <br>Sets @addr to A1
 
@@ -90,10 +91,60 @@ This document explains how to use API functions in Smart Contractor AT Assembler
 **0x0147: div_B_by_A** `FUN div_B_by_A` <br>Sets A to B / A. If A is zero, does nothing.
 
 ## 0x0200..0x02ff - Functions that perform hash operations
-TODO
+Hashes will be stored in less significative bytes of pseudo-registers and the remaining bytes will be zero.
+
+**0x0200: MD5_A_to_B** `FUN MD5_A_to_B` <br>Take an MD5 hash of A1..2 and put this is B1..2
+
+**0x0201: check_MD5_A_with_B** `FUN @addr check_MD5_A_with_B` <br>Sets @addr to 1 if MD5 hash of A1..2 matches B1..2 or 0 if it is not
+
+**0x0202: HASH160_A_to_B** `FUN HASH160_A_to_B` <br>Take a RIPEMD160 hash of A1..3 and put this in B1..3
+
+**0x0203: check_HASH160_A_with_B** `FUN @addr check_HASH160_A_with_B` <br>Sets @addr to 1 if RIPEMD160 hash of A1..3 matches B1..3 or 0 if it is not
+
+**0x0204: SHA256_A_to_B** `FUN SHA256_A_to_B` <br>Take a SHA256 hash of A and put this in B
+
+**0x0205: check_SHA256_A_with_B** `FUN @addr check_SHA256_A_with_B` <br>Sets @addr to 1 if SHA256 hash of A matches B or 0 if it is not
 
 ## 0x0300..0x03ff - Generic functions that get block and tx info
-TODO
+Timestamp is a long value (64-bit) that actually is an union between tx block height (32-bit MSB) and the tx number inside that block (32bit LSB). Example: the second tx of block 9 will have timestamp 0x0000000900000002 Ex: tx 25 (0x19) of block 675329 (0xa4e01) get timestamp 2900515969040409 (0x000a4e0100000019).
+
+**0x0300: get_Block_Timestamp** `FUN @addr get_Block_Timestamp` <br>Sets @addr to the timestamp of the current block.
+
+**0x0301: get_Creation_Timestamp** `FUN @addr get_Creation_Timestamp` <br>Sets @addr to the timestamp of the AT creation block.
+
+**0x0302: get_Last_Block_Timestamp** `FUN @addr get_Last_Block_Timestamp` <br>Sets @addr to the timestamp of the previous block.
+
+**0x0303: put_Last_Block_Hash_In_A** `FUN put_Last_Block_Hash_In_A` <br>Sets A to the block hash of the previous block.
+
+**0x0304: A_to_Tx_after_Timestamp** `FUN A_to_Tx_after_Timestamp $addr` <br>Sets A to the next tx after $addr timestamp.
+
+**0x0305: get_Type_for_Tx_in_A** `FUN @addr get_Type_for_Tx_in_A` <br>If A is a valid tx and has a message then sets @addr to 1. If A is a valid tx and has no message, sets @addr to 0. If A is not valid tx, sets @addr to -1.
+
+**0x0306: get_Amount_for_Tx_in_A** `FUN @addr get_Amount_for_Tx_in_A` <br>If A is a valid tx, sets @addr to tx amount minus activation fee. If A is not valid tx, sets @addr to -1. Note that if A valid, function always returns a value >= 0, because a value smaller than activation fee will not wake up the contract.
+
+**0x0307: get_Timestamp_for_Tx_in_A** `FUN @addr get_Timestamp_for_Tx_in_A` <br>If A is a valid tx then @addr to the tx timestamp. If a is not valid, returns -1.
+
+**0x0308: get_Ticket_Id_for_Tx_in_A** `FUN @addr get_Ticket_Id_for_Tx_in_A` <br>If A is a valid tx then sets @addr to a pseudo-random value. The contract will sleep for 15 blocks (to get entropy) before return a value. If tx in A is not valid, returns -1 immediatly.
+
+**0x0309: message_from_Tx_in_A_to_B** `FUN message_from_Tx_in_A_to_B` <br>If A is a valid tx and message.length <= 256-bit then sets B to the tx message. If the message is bigger than B size (4 longs) OR there is no message in tx OR tx in A is no valid, sets B to zero.
+
+**0x030a: B_to_Address_of_Tx_in_A** `FUN B_to_Address_of_Tx_in_A` <br>If A is a valid tx then sets B to the tx address. If tx in A is not valid, clears B. Note that an address is one long in size, so B1 will have the address and B2..3 will be cleared.
+
+**0x030b: B_to_Address_of_Creator** `FUN B_to_Address_of_Creator` <br>Sets B to the address of the AT's creator. Note that an address is one long in size, so B1 will have the address and B2..3 will be cleared.
 
 ## 0x0400..0x04ff - Generic functions that check balances and perform ops
-TODO
+Balances will be handle in NQT ammounts. 1 burst is 10.000.000 NQT. 1 NQT is the smallest quantity possible bigger than zero. Total supply for burstcoin will be 2.158.812.800 bursts, or 21.588.128.000.000.000 NQT or 0x4cb249bcce4000.
+
+**0x0400: get_Current_Balance** `FUN @addr get_Current_Balance` <br>Sets @addr to current (atomic) balance of the AT. This is affected every new instruction is processed.
+
+**0x0401: get_Previous_Balance** `FUN @addr get_Previous_Balance` <br>Sets @addr to the balance it had last time it was activated.
+
+**0x0402: send_to_Address_in_B** `FUN send_to_Address_in_B $addr` <br>If B is a valid address then send it $addr amount. If the value is bigger than current balance, sends entire balance to B.
+
+**0x0403: send_All_to_Address_in_B** `FUN send_All_to_Address_in_B` <br>If B is a valid address then send it the entire balance.
+
+**0x0404: send_Old_to_Address_in_B** `FUN send_Old_to_Address_in_B` <br>If B is a valid address then send it the Previous Balance.
+
+**0x0405: send_A_to_Address_in_B** `FUN send_A_to_Address_in_B` <br>If B is a valid address then send it A as a message.
+
+**0x0406: add_Minutes_to_Timestamp** `FUN @addr1 add_Minutes_to_Timestamp $addr2 $addr3` <br>Sets @addr1 to timestamp $addr2 plus $addr3 minutes, where $addr1 and $addr2 are timestamps and $addr3 is minutes (long). This function expects that each block takes 4 minutes to be created (which is true in average).

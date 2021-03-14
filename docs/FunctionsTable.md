@@ -77,8 +77,8 @@ Functions to be used with `FUN` instruction, hex codes `0x32` to `0x37`.
 | 0x0301 | get_Creation_Timestamp | FUN @addr get_Creation_Timestamp | Get_Creation_Timestamp | sets @addr to the timestamp of the AT creation block |
 | 0x0302 | get_Last_Block_Timestamp | FUN @addr get_Last_Block_Timestamp | Get_Last_Block_Timestamp | sets @addr to the timestamp of the previous block |
 | 0x0303 | put_Last_Block_Hash_In_A | FUN put_Last_Block_Hash_In_A | Put_Last_Block_Hash_In_A | puts the block hash of the previous block in A |
-| 0x0304 | A_to_Tx_after_Timestamp | FUN A_to_Tx_after_Timestamp $addr | A_To_Tx_After_Timestamp | sets A to tx hash of the first tx after $addr timestamp |
-| 0x0305 | get_Type_for_Tx_in_A | FUN @addr get_Type_for_Tx_in_A | Get_Type_For_Tx_In_A | • if A is a valid tx then @addr to tx type |
+| 0x0304 | A_to_Tx_after_Timestamp | FUN A_to_Tx_after_Timestamp $addr | A_To_Tx_After_Timestamp | Put transaction after timestamp $addr in A, or zero if none |
+| 0x0305 | get_Type_for_Tx_in_A | FUN @addr get_Type_for_Tx_in_A | Get_Type_For_Tx_In_A | • Return transaction type from transaction in A<br>Returns 0xffffffffffffffff in A not valid transaction |
 | 0x0306 | get_Amount_for_Tx_in_A | FUN @addr get_Amount_for_Tx_in_A | Get_Amount_For_Tx_In_A | •• if A is a valid tx then @addr to tx amount |
 | 0x0307 | get_Timestamp_for_Tx_in_A | FUN @addr get_Timestamp_for_Tx_in_A | Get_Timestamp_For_Tx_In_A | if A is a valid tx then @addr to the tx timestamp |
 | 0x0308 | get_Ticket_Id_for_Tx_in_A | FUN @addr get_Ticket_Id_for_Tx_in_A | Get_Random_Id_For_Tx_In_A | ••• if A is a valid tx then @addr to the tx random id |
@@ -88,7 +88,7 @@ Functions to be used with `FUN` instruction, hex codes `0x32` to `0x37`.
 
 • Tx type is 0 for a normal tx and 1 for a message tx <br>
 •• Amount will always have the minimum fee subtracted from it<br>
-••• A random id is a 64 bit signed value (that is always returned positive) and this is a blocking function<br>
+••• A random id is a 64 bit signed value (that is always returned positive) and this is a blocking function. The contract may be stopped until there are entropy to generate the number, from zero (if there are many tx) to 15 blocks (if no tx, only mining) <br>
 •••• If the tx does not include a message tx then this will zero out the B value
 
 Note: For all cases where A isnot a valid tx @addr will be set to 0xffffffffffffffff

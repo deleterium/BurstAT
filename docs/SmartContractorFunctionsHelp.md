@@ -54,11 +54,35 @@ A and B are 256-bit special variables called pseudo-registers. Regular variables
 
 **0x0124: copy_B_From_A** `FUN copy_B_From_A` <br>Copies A into B
 
-**0x0125: check_A_Is_Zero** `FUN @addr check_A_Is_Zero` <br>Sets @addr to 1 if A is zero or 0 if it is not (i.e. bool)
+**0x0125: check_A_Is_Zero** `FUN @addr check_A_Is_Zero` <br>Sets @addr to 0 if A is zero or 1 if it is not (i.e. bool) Pay close attention on function implementation below:
+```javascript
+function check_B_Is_Zero() {
+   if (B1 == 0 && B2 == 0 && B3 == 0 && B4 == 0 )
+      return 0;
+   else
+      return 1;
+}
+```
 
-**0x0126: check_B_Is_Zero** `FUN @addr check_B_Is_Zero` <br>Sets @addr to 1 if B is zero of 0 if it is not (i.e. bool)
+**0x0126: check_B_Is_Zero** `FUN @addr check_B_Is_Zero` <br>Sets @addr to 0 if B is zero of 1 if it is not (i.e. bool). Pay close attention on function implementation below:
+```javascript
+function check_B_Is_Zero() {
+   if (B1 == 0 && B2 == 0 && B3 == 0 && B4 == 0 )
+      return 0;
+   else
+      return 1;
+}
+```
 
-**0x0127: check_A_equals_B** `FUN @addr check_A_equals_B` <br>Sets @addr to 1 if A is equal to B or 0 if it is not.
+**0x0127: check_A_equals_B** `FUN @addr check_A_equals_B` <br>Sets @addr to 1 if A is equal to B or 0 if it is not. Now the function returns the expected bool value:
+```javascript
+function check_A_equals_B() {
+   if (A1 == B1 && A2 == B2 && A3 == B3 && A4 == B4 )
+      return 1;
+   else
+      return 0;
+}
+```
 
 **0x0128: swap_A_and_B** `FUN swap_A_and_B` <br>Swap the values of A and B
 

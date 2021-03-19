@@ -23,5 +23,12 @@ Of course you will need a full node running Burstcoin to start testing. I assume
 * Use the page localhost:6876/api-doc to create and test your ATs!
 
 # Advanced tools
-Smart contractor has a page "Examine ATs". Just paste the full address for an api call to **getATDetails** Ex: http://localhost:6876/burst?requestType=getATDetails&at=3822295204055565051 where the at number is the same number from transaction it was created.
-It is also available a better [Burstcoin AT Decompiler](./decompiler/decompiler.html) created by community. Use them together to have best of both worlds.
+## Burst AT Simple IDE
+Checkout [this page](./SimpleIDE/index.html) where you can code in assembly with syntax highlightning and some error catches.
+
+## Burst AT decompiler
+[Burstcoin AT Decompiler](./decompiler/decompiler.html) was created by community. It has preprocessor, decompiler, and labels postprocessing.
+
+## Smart Contractor Examine AT Tool
+Smart contractor has a page "Examine ATs". Just paste the full address for an api call to **getATDetails** Ex: http://localhost:6876/burst?requestType=getATDetails&at=3822295204055565051 where the at number is the same number from transaction it was created. It will show decompiled code and also actual state of variables.
+

@@ -21,7 +21,7 @@ Of course you will need a full node running Burstcoin to start testing. I assume
 
 # Programing tools
 ## Smart Contractor AT Tools
-This was the first tool available and the only one assembler compiler. Use it at [Smart Contractor AT Tools](./SmartContractor/index.html). This version got some upgrades to help you code better. [Check upgrades](./SmartContractor/README.md)!
+This was the first tool available and the only one assembler compiler. Use it at [Smart Contractor AT Tools](./SmartContractor/index.html). This version got some upgrades to help you code better. [Check upgrades](https://github.com/deleterium/BurstAT/blob/master/SmartContractor/README.md)!
 
 ## Burst AT Simple IDE
 Checkout [this page](./SimpleIDE/index.html) where you can code in assembly with syntax highlightning and some error catches. Still alpha version.

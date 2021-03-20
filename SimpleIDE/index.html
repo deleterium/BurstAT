@@ -30,17 +30,18 @@
             float: left;
             width: 50%;
         }
-        textarea {
-            width: 100%;
- /*           height: 100%;
-            padding: 5px 5px 5px 5px;
-            min-height: 75px; */
-                resize: none;
-    overflow: hidden;
-    min-height: 50px;
-    max-height: 100px;
 
-            
+        .inc_height {
+            min-height: 150px;
+        }
+
+        textarea {
+            width: calc(100% - 20px);
+            padding: 5px 5px 5px 5px;
+            font-family: "Lucida Console", "Courier New", monospace;
+            overflow: auto;
+            resize: none;
+            font-size: 100%;
         }
         button {
             margin: 20px 0px 20px 0px;
@@ -54,38 +55,25 @@
 
 <script>
 
-function auto_grow() {
-    document.activeElement.style.height = "5px";
-    document.activeElement.style.height = (document.activeElement.scrollHeight)+"px";
-}
-
-function onpaste1(){
-      setTimeout(function(){
-            document.getElementById("codeInput").innerHTML = document.getElementById("codeInput").innerText;
-        }, 10);
-}
-
 function textKeyUp () {
+    // grows text area
+    var elem = document.getElementById("codeInput");
+    elem.rows =  (elem.value.match(/\n/g) || '').length + 2;
     asmCodeColor("codeInput","codeOutput");
 }
 </script>
 </head>
-<body onload='javascript:asmCodeColor("codeInput","codeOutput")'>
+<body onload='javascript:textKeyUp()'>
  
     <div>
         <h1>Burstcoin AT IDE</h1>
     </div>
 
-    <div class="left">
+    <div class="left"> 
         <h3>Code here:</h3>
-        <div id="codeInput" class="code" contenteditable="true" onpaste="onpaste1()" onkeyup='javascript:textKeyUp();'>SET @0x00 #0000000000000000
+        <textarea id="codeInput" class="inc_height" spellcheck="false" wrap="off" onkeyup='javascript:textKeyUp();'>SET @0x00 #0000000000000000
 SET @0x08 #0000000000000008
 SET @0x0a #0000000000 00000a
-SET @0x30 #0000000000000030
-SET @0xff #00000000000000ff
-SET @MAX_STRING_VALUE #0000000005f5e0ff
-SET @STR_ERROR #0000726f72726523
-// SET @ERROR2 #0a32726f72726523
 
 PCS
 while_true:
@@ -93,7 +81,12 @@ FUN A_to_Tx_after_Timestamp $LastTx
 FUN @eax check_A_Is_Zero
 BNZ $eax :next
 FIN
-        </div>
+        </textarea>
+        <br/><br/>
+        <footer>Releases:<br/>
+             • March 2021 • <a href="https://github.com/deleterium/BurstAT">deleterium</a> • Syntax highlightning<br/>
+        </footer>
+
     </div>
 
     <div class="right">
@@ -101,14 +94,7 @@ FIN
         <div class="code" id="codeOutput">
         </div>
     </div>
-        <br/><br/><br/>
-        <footer>Releases:<br/>
-             • March 2021 • <a href="https://github.com/deleterium/BurstAT">deleterium</a> • Syntax highlightning<br/>
-             <br>
-             Known bugs: 1) Sometimes new-lines disapears or are doubled. Copy and paste something (like a space) to fix it.
-             2) Pasting someting will move cursor position to start (very annoying)...
-        </footer>
-    </div>
 
+    </div>
 </body>
 </html>

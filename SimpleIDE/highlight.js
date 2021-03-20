@@ -3,7 +3,7 @@
 // based on w3schools code
 function asmCodeColor(elmntIn, elmntOut) {
     var elmntObj = document.getElementById(elmntIn); //getElementById(elmntIn);
-    var elmntTxt = elmntObj.innerText;
+    var elmntTxt = elmntObj.value;
     var elmntOutObj = document.getElementById(elmntOut);
     var commentcolor = "green";
     var asmerrorcolor = "pink";

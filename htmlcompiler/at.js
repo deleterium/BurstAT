@@ -5070,10 +5070,10 @@
         for (var g = cs(new ds, g, b, b.length | 0), h = 0;
             (a.length | 0) < (-1 + d | 0) && es(g);) {
             var n = fs(g);
-            a.push(b.substring(h, n));
+            a.push(b.substring(h, n).trim());
             h = gs(g)
         }
-        a.push(b.substring(h));
+        a.push(b.substring(h).trim());
         if (0 === h && 2 === (a.length | 0) && (2 < d || !es(g))) a = Wg(B(), (new C).c([b]), $g(wd(), p(la)));
         else {
             d = a.length | 0;
@@ -7082,10 +7082,12 @@
     function gx() {}
     gx.prototype = new sk;
 
+/* function keyup on id textCode  */
     function hx() {
         Fw();
         var a = (0, l.jQuery)("#textCode").val(),
             a = $r(Ba(), a, "\n", 0);
+        var elem = document.getElementById("textCode");
         try {
             var b = yf((new id).d(), Rl(Rj(), a)),
                 d = di(ii(), b),
@@ -7120,7 +7122,11 @@
                 }), (vf(), wf().Ha)),
                 ob = Rj().kc;
             S.append(cx(new dx, ra, Xa, ob).Vd())
+            elem.style.borderColor="black";
+            elem.style.outlineColor="black";
         } catch (Oa) {
+            elem.style.borderColor="red";
+            elem.style.outlineColor="red";
             if (ix(Oa))(0, l.jQuery)("#textOutput").text("Unknown line: " + Oa.Ci);
             else if (jx(Oa))(0, l.jQuery)("#textOutput").text("Duplicate label: " + Oa.Xe);
             else if (kx(Oa))(0, l.jQuery)("#textOutput").text("Label not found: " + Oa.Xe);
@@ -7130,9 +7136,42 @@
             else throw Oa;
         }
     }
+    /* textCode set events (called once) */
+    function growTextarea () {
+        var elem = document.getElementById("textCode")
+        var offset = elem.offsetHeight - elem.clientHeight;
+        var resizeTextarea = function( elem ) {
+          // two additional variables getting the top and left scoll positions.
+          var scrollLeft = window.pageXOffset || (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+          var scrollTop  = window.pageYOffset || (document.documentElement || document.body.parentNode || document.body).scrollTop;
+          elem.style.height='auto';
+          elem.style.height=elem.scrollHeight;
+          // Applying previous top and left scroll position after textarea resize. 
+          window.scrollTo(scrollLeft, scrollTop);
+        };
+
+        resizeTextarea( elem );
+    }
+    /* id textCode set events (called once) */
     gx.prototype.qf = function() {
         (0, l.jQuery)("#textCode").keyup(function() {
+            growTextarea();
             hx()
+        });
+        (0, l.jQuery)("#textCode").attr("spellcheck",false);
+        (0, l.jQuery)("#textCode").keydown(function(e) {
+            if (e.keyCode === 9) { // tab was pressed
+                var start = e.target.selectionStart;
+                var end = e.target.selectionEnd;
+                var oldValue = e.target.value;
+                // replace point and change input value
+                var newValue = oldValue.slice(0, start) + '    ' + oldValue.slice(end)
+                e.target.value = newValue;
+                // replace cursor
+                e.target.selectionStart = e.target.selectionEnd = start + 4;
+                // prevent the focus lose
+                return false;
+            }
         });
         (0, l.jQuery)("#textCode").on("paste", function(a) {
             return function() {
@@ -7185,7 +7224,7 @@
             t = W(new X, t, "textCode", u),
             u = V().It,
             x = V().h,
-            g = Y(g, (new C).c([Y(h, (new C).c([n, Y(Y(q, (new C).c([t, W(new X, u, "width:100%; height:350px",
+            g = Y(g, (new C).c([Y(h, (new C).c([n, Y(Y(q, (new C).c([t, W(new X, u, "width:100%; min-height:350px",
                 x)])), L())]))])),
             h = V().G,
             n = V().q,

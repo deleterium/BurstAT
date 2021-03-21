@@ -5070,10 +5070,22 @@
         for (var g = cs(new ds, g, b, b.length | 0), h = 0;
             (a.length | 0) < (-1 + d | 0) && es(g);) {
             var n = fs(g);
-            a.push(b.substring(h, n).trim());
+            var line = b.substring(h, n);
+            var startComment = line.indexOf(";");
+            if (startComment >= 0) {
+                 a.push(line.slice(0,startComment).trim());
+            } else {
+                a.push(line.trim());
+            }
             h = gs(g)
         }
-        a.push(b.substring(h).trim());
+        var line = b.substring(h);
+        var startComment = line.indexOf(";");
+        if (startComment >= 0) {
+             a.push(line.slice(0,startComment).trim());
+        } else {
+            a.push(line.trim());
+        }
         if (0 === h && 2 === (a.length | 0) && (2 < d || !es(g))) a = Wg(B(), (new C).c([b]), $g(wd(), p(la)));
         else {
             d = a.length | 0;

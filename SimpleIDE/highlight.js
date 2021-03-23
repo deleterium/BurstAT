@@ -9,6 +9,15 @@ const allowedCodes = [
     [0xf2,  0,  /^\s*\^comment\s+(.*)/ ],
     [0xf3,  0,  /^\s*\^declare\s+(\w+)\s*$/ ],
     [0xf4,  0,  /^\s*\^allocate\s+(\w+)\s+(\d+)\s*$/ ],
+    [0xf5,  0,  /^\s*if\s+(\w+)\s*([<>=!]+)\s*(0|\w+)\s*$/ ],
+    [0xf6,  0,  /^\s*else\s*$/ ],
+    [0xf7,  0,  /^\s*endif\s*$/ ],
+    [0xf8,  0,  /^\s*while\s+(\w+)\s*([<>=!]+)\s*(0|\w+)\s*$/ ],
+    [0xf9,  0,  /^\s*loop\s*$/ ],
+    [0xfa,  0,  /^\s*repeat\s*$/ ],
+    [0xfb,  0,  /^\s*until\s+(\w+)\s*([<>=!]+)\s*(0|\w+)\s*$/ ],
+    [0xfc,  0,  /^\s*continue\s*$/ ],
+    [0xfd,  0,  /^\s*break\s*$/ ],
     [0x01, 13,  /^\s*SET\s+@(\w+)\s+#([\da-f]{16})\b\s*$/ ],
     [0x02,  9,  /^\s*SET\s+@(\w+)\s+\$(\w+)\s*$/ ],
     [0x03,  5,  /^\s*CLR\s+@(\w+)\s*$/ ],
@@ -135,12 +144,8 @@ const allowedFunctions = [
 
 //w3CodeColor(document.getElementById("myDiv"),"js");
 // based on w3schools code
-function asmCodeColor(elmntIn, elmntOut) {
+function asmCodeColor(txt) {
     'use strict';
-    //Collecting information
-    var elmntObj = document.getElementById(elmntIn);
-    var elmntTxt = elmntObj.value;
-    var elmntOutObj = document.getElementById(elmntOut);
 
     //Choose your colors
     var asmCommentColor = "green";
@@ -150,10 +155,7 @@ function asmCodeColor(elmntIn, elmntOut) {
     var asmNumberColor = "red";
     var asmErrorColor = "pink";
 
-    //Do the magic
-    elmntTxt = asmHighLight(elmntTxt);
-    //Write to output
-    elmntOutObj.innerHTML = elmntTxt;
+    return asmHighLight(txt);
 
     function asmHighLight(txt) {
         var tmp_string;
@@ -203,6 +205,23 @@ function asmCodeColor(elmntIn, elmntOut) {
                                 tmp_string = addSpanColorRegex(lineBefCom,/\^allocate/,asmPropertyColor);
                                 tmp_string = addSpanColorRegex(tmp_string,/\d+/,asmNumberColor);
                                 ret += tmp_string;
+                                break;
+                            case 0xf5: //if
+                            case 0xf8: //while
+                            case 0xfb: //until
+                                tmp_string = addSpanColorRegex(lineBefCom,/[<>=!]+/,asmPropertyColor);
+                                tmp_string = addSpanColor(tmp_string,"if",asmPropertyColor);
+                                tmp_string = addSpanColor(tmp_string,"while",asmPropertyColor);
+                                tmp_string = addSpanColor(tmp_string,"until",asmPropertyColor);
+                                ret += tmp_string;
+                                break;
+                            case 0xf6: //else
+                            case 0xf7: //endif
+                            case 0xf9: //loop
+                            case 0xfa: //repeat
+                            case 0xfc: //continue
+                            case 0xfd: //break
+                                ret += spanColorAll(lineBefCom,asmPropertyColor);
                                 break;
                             default: //is comment,
                                 ret += spanColorAll(lineBefCom,asmCommentColor);

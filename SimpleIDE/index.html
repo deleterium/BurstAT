@@ -4,6 +4,7 @@
     <title>Burstcoin AT Decompiler</title>
     <meta charset="utf-8">
     <script src="highlight.js"></script>
+    <script src="preprocessor.js"></script>
 
     <style>
         body {
@@ -56,10 +57,19 @@
 <script>
 
 function textKeyUp () {
-    // grows text area
     var elem = document.getElementById("codeInput");
-    elem.rows =  (elem.value.match(/\n/g) || '').length + 2;
-    asmCodeColor("codeInput","codeOutput");
+    var text = elem.value;
+
+    // grows text area
+    elem.rows =  (text.match(/\n/g) || '').length + 2;
+
+    if (document.getElementById('onthefly').checked) {
+        if (document.getElementById('preprocess').checked)
+            text = highLevelProcessor(text);
+        if (document.getElementById('highlight').checked)
+            text = asmCodeColor(text);
+        document.getElementById("codeOutput").innerHTML = text;
+    }
 }
 </script>
 </head>
@@ -67,6 +77,10 @@ function textKeyUp () {
  
     <div>
         <h1>Burstcoin AT IDE</h1>
+
+<br> <label><input id="preprocess" type="checkbox" onclick="textKeyUp()" > Process if's and loop's</label>
+<br> <label><input id="highlight" type="checkbox" onclick="textKeyUp()" checked="true"> Syntax highlight on output</label>
+<br> <label><input id="onthefly" type="checkbox" onclick="textKeyUp()" checked="true"> Refresh output on-the-fly</label>
     </div>
 
     <div class="left"> 
@@ -76,7 +90,12 @@ SET @0x08 #0000000000000008
 SET @0x0a #0000000000 00000a
 
 PCS
-while_true:
+if eax <= 0x08
+add $eax $0x08
+else
+sub $eax $0x08
+endif
+
 FUN A_to_Tx_after_Timestamp $LastTx
 FUN @eax check_A_Is_Zero
 BNZ $eax :next

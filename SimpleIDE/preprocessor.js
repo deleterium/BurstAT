@@ -29,7 +29,9 @@ function highLevelProcessor(program) {
         REPEAT: 5,
         UNTIL: 6,
         CONTINUE: 7,
-        BREAK: 8
+        BREAK: 8,
+        CALL_RET: 9,
+        CALL: 10
     }
 
     const RegexCode = [
@@ -41,7 +43,9 @@ function highLevelProcessor(program) {
        /^\s*repeat\s*$/,
        /^\s*until\s+(\w+)\s*([<>=!]+)\s*(0|\w+)\s*$/,
        /^\s*continue\s*$/,
-       /^\s*break\s*$/
+       /^\s*break\s*$/,
+       /^\s*call\s+(\w+)\s*=\s*(\w+)\s*(.*)$/,    // call ret = function params...
+       /^\s*call\s+(\w+)\s*(.*)$/                 // call function params...
     ];
 
     
@@ -57,6 +61,7 @@ function highLevelProcessor(program) {
     var indentation_level = -1;
     var query;
     var jmp_string;
+    let params;
     var debug = 1;     //will print optional if_start label.
     
     var lines = program.split("\n")
@@ -138,7 +143,10 @@ function highLevelProcessor(program) {
                         query.Ended = true;
                         indentation_level--;
                         break;
+                    default:
+                        break; //match for CALL_RET or CALL
                 }
+                j=RegexCode.length;//break regex loop
             }
         }
     }
@@ -176,44 +184,44 @@ function highLevelProcessor(program) {
                         query = ifs_info.find(ifs => ifs.Started === false);
                         query.Started = true;
                         if (debug == 1)
-                            ret += "".padStart(query.Level*3,' ')+"_if"+query.ID+":\n";
+                            ret += "".padStart(parts[0].search(/\S/),' ')+"_if"+query.ID+":\n";
                         try { rel_stmt = createStatement( parts[1], parts[2], parts[3], i); }
                         catch (error) { return  error; }
                         if (query.HasElse === true)
                             jmp_string = "_if"+query.ID+"_else";
                         else
                             jmp_string = "_if"+query.ID+"_endif";
-                        ret += "".padStart(query.Level*3,' ')+rel_stmt+" :"+jmp_string+lineAftCom+"\n";
+                        ret += "".padStart(parts[0].search(/\S/),' ')+rel_stmt+" :"+jmp_string+lineAftCom+"\n";
                         break;
                     case RegexID.ELSE:
                         query=ifs_info.filter(ifs => ifs.Started === true && ifs.Ended === false).pop();
-                        ret += "".padStart((query.Level+1)*3,' ')+"JMP :_if"+query.ID+"_endif\n";   
-                        ret += "".padStart(query.Level*3,' ')+"_if"+query.ID+"_else:"+lineAftCom+"\n"
+                        ret += "".padStart(parts[0].search(/\S/),' ')+"JMP :_if"+query.ID+"_endif\n";   
+                        ret += "".padStart(parts[0].search(/\S/),' ')+"_if"+query.ID+"_else:"+lineAftCom+"\n"
                         break;
                     case RegexID.ENDIF:
                         query=ifs_info.filter(ifs => ifs.Started === true && ifs.Ended === false).pop();
                         query.Ended = true;
-                        ret += "".padStart(query.Level*3,' ')+"_if"+query.ID+"_endif:"+lineAftCom+"\n"
+                        ret += "".padStart(parts[0].search(/\S/),' ')+"_if"+query.ID+"_endif:"+lineAftCom+"\n"
                         break;
                     case RegexID.WHILE:
                         query = loops_info.find(loops => loops.Started === false);
                         query.Started = true;
-                        ret += "".padStart(query.Level*3,' ')+"_loop"+query.ID+":\n";
+                        ret += "".padStart(parts[0].search(/\S/),' ')+"_loop"+query.ID+":\n";
                         try { rel_stmt = createStatement( parts[1], parts[2], parts[3], i); }
                         catch (error) { return  error; }
                         jmp_string = "_loop"+query.ID+"_end";
-                        ret += "".padStart(query.Level*3,' ')+rel_stmt+" :"+jmp_string+lineAftCom+"\n";
+                        ret += "".padStart(parts[0].search(/\S/),' ')+rel_stmt+" :"+jmp_string+lineAftCom+"\n";
                         break;
                     case RegexID.LOOP:
                         query=loops_info.filter(loops => loops.Started === true && loops.Ended === false).pop();
                         query.Ended = true;
-                        ret += "".padStart((query.Level+1)*3,' ')+"JMP :_loop"+query.ID+lineAftCom+"\n";
-                        ret += "".padStart(query.Level*3,' ')+"_loop"+query.ID+"_end:\n";
+                        ret += "".padStart(parts[0].search(/\S/),' ')+"JMP :_loop"+query.ID+lineAftCom+"\n";
+                        ret += "".padStart(parts[0].search(/\S/),' ')+"_loop"+query.ID+"_end:\n";
                         break;
                     case RegexID.REPEAT:
                         query = loops_info.find(loops => loops.Started === false);
                         query.Started = true;
-                        ret += "".padStart(query.Level*3,' ')+"_loop"+query.ID+":"+lineAftCom+"\n";
+                        ret += "".padStart(parts[0].search(/\S/),' ')+"_loop"+query.ID+":"+lineAftCom+"\n";
                         break;
                     case RegexID.UNTIL:
                         query=loops_info.filter(loops => loops.Started === true && loops.Ended === false).pop();
@@ -221,18 +229,48 @@ function highLevelProcessor(program) {
                         catch (error) { return  error; }
                         jmp_string = "_loop"+query.ID;
                         query.Ended = true;
-                        ret += "".padStart((query.Level+1)*3,' ')+rel_stmt+" :"+jmp_string+lineAftCom+"\n";
-                        ret += "".padStart(query.Level*3,' ')+"_loop"+query.ID+"_end:\n";
+                        ret += "".padStart(parts[0].search(/\S/),' ')+rel_stmt+" :"+jmp_string+lineAftCom+"\n";
+                        ret += "".padStart(parts[0].search(/\S/),' ')+"_loop"+query.ID+"_end:\n";
                         break;
                     case RegexID.CONTINUE:
                         query=loops_info.filter(loops => loops.Started === true && loops.Ended === false).pop();
-                        ret += "".padStart((query.Level+1)*3,' ')+"JMP :_loop"+query.ID+lineAftCom+"\n";
+                        ret += "".padStart(parts[0].search(/\S/),' ')+"   JMP :_loop"+query.ID+lineAftCom+"\n";
                         break;
                     case RegexID.BREAK:
                         query=loops_info.filter(loops => loops.Started === true && loops.Ended === false).pop();
-                        ret += "".padStart((query.Level+1)*3,' ')+"JMP :_loop"+query.ID+"_end"+lineAftCom+"\n";
+                        ret += "".padStart(parts[0].search(/\S/),' ')+"JMP :_loop"+query.ID+"_end"+lineAftCom+"\n";
+                        break;
+                     case RegexID.CALL_RET:
+                        if (parts.length == 3){ //no parameters gave
+                            ret+="".padStart(parts[0].search(/\S/),' ')+"JSR :"+parts[2]+"\n";
+                            ret+="".padStart(parts[0].search(/\S/),' ')+"POP "+parts[1]+"\n";
+                            break;
+                        }
+                        params = parts[3].split(" ");
+                        for (let x=params.length; x>0; x--){
+                            if (params[x-1].length > 0)
+                                ret+="".padStart(parts[0].search(/\S/),' ')+"PSH $"+params[x-1]+"\n";
+                        }
+                        ret+="".padStart(parts[0].search(/\S/),' ')+"JSR :"+parts[2]+"\n";
+                        ret+="".padStart(parts[0].search(/\S/),' ')+"POP @"+parts[1]+"\n";
+                        break;
+                    case RegexID.CALL:
+                        if (parts.length == 2){ //no parameters gave
+                            ret+="".padStart(parts[0].search(/\S/),' ')+"JSR :"+parts[1]+"\n";
+                            break;
+                        }
+                        params = parts[2].split(" ");
+                        for (let x=params.length; x>0; x--){
+                            if (params[x-1].length > 0)
+                                ret+="".padStart(parts[0].search(/\S/),' ')+"PSH $"+params[x-1]+"\n";
+                        }
+                        ret+="".padStart(parts[0].search(/\S/),' ')+"JSR :"+parts[1]+"\n";
+                        break;
+                    default:
+                        ret+="not implemented\n";
                         break;
                 }
+                j=RegexCode.length;//break regex loop
             }
         }
         if (rFound == 0)

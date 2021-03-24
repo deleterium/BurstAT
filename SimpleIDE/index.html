@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Burstcoin AT Decompiler</title>
+    <title>Burstcoin AT IDE</title>
     <meta charset="utf-8">
     <script src="highlight.js"></script>
     <script src="preprocessor.js"></script>
+    <script src="tools.js"></script>
 
     <style>
         body {
@@ -71,6 +72,14 @@ function textKeyUp () {
         document.getElementById("codeOutput").innerHTML = text;
     }
 }
+
+function createVar(){
+    var varName=prompt("Variable name?", "STR");
+    var str=prompt("Type desired text:", "");
+    var a = Tools.str2longArray(str);
+    var b = Tools.longArray2SmartContractor(varName, a);
+    window.prompt("Create variable codes: Ctrl+C, enter", b);
+}
 </script>
 </head>
 <body onload='javascript:textKeyUp()'>
@@ -81,6 +90,7 @@ function textKeyUp () {
 <br> <label><input id="preprocess" type="checkbox" onclick="textKeyUp()" > Process if's and loop's</label>
 <br> <label><input id="highlight" type="checkbox" onclick="textKeyUp()" checked="true"> Syntax highlight on output</label>
 <br> <label><input id="onthefly" type="checkbox" onclick="textKeyUp()" checked="true"> Refresh output on-the-fly</label>
+<br> <button id="createtext" onClick="javascript: createVar();">Create string</button>
     </div>
 
     <div class="left"> 

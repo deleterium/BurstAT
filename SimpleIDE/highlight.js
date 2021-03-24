@@ -7,19 +7,21 @@ const allowedCodes = [
     [0xf0,  0,  /^\s*$/ ],
     [0xf1,  0,  /^\s*(\w+):\s*$/ ],
     [0xf2,  0,  /^\s*\^comment\s+(.*)/ ],
-    [0xf3,  0,  /^\s*\^declare\s+(\w+)\s*$/ ],
-    [0xf4,  0,  /^\s*\^allocate\s+(\w+)\s+(\d+)\s*$/ ],
-    [0xf5,  0,  /^\s*if\s+(\w+)\s*([<>=!]+)\s*(0|\w+)\s*$/ ],
+    [0xf3,  0,  /^\s*(\^declare)\s+(\w+)\s*$/ ],
+    [0xf4,  0,  /^\s*(\^allocate)\s+(\w+)\s+(\d+)\s*$/ ],
+    [0xf5,  0,  /^\s*(if)\s+(\w+)\s*([<>=!]+)\s*(0|\w+)\s*$/ ],
     [0xf6,  0,  /^\s*else\s*$/ ],
     [0xf7,  0,  /^\s*endif\s*$/ ],
-    [0xf8,  0,  /^\s*while\s+(\w+)\s*([<>=!]+)\s*(0|\w+)\s*$/ ],
+    [0xf8,  0,  /^\s*(while)\s+(\w+)\s*([<>=!]+)\s*(0|\w+)\s*$/ ],
     [0xf9,  0,  /^\s*loop\s*$/ ],
     [0xfa,  0,  /^\s*repeat\s*$/ ],
-    [0xfb,  0,  /^\s*until\s+(\w+)\s*([<>=!]+)\s*(0|\w+)\s*$/ ],
+    [0xfb,  0,  /^\s*(until)\s+(\w+)\s*([<>=!]+)\s*(0|\w+)\s*$/ ],
     [0xfc,  0,  /^\s*continue\s*$/ ],
     [0xfd,  0,  /^\s*break\s*$/ ],
-    [0x01, 13,  /^\s*SET\s+@(\w+)\s+#([\da-f]{16})\b\s*$/ ],
-    [0x02,  9,  /^\s*SET\s+@(\w+)\s+\$(\w+)\s*$/ ],
+    [0xfe,  0,  /^\s*call\s+(\w+)\s*=\s*(\w+)\s*(.*)$/],                // call ret = function params...
+    [0xff,  0,  /^\s*call\s+(\w+)\s*(.*)$/],                            // call function params...
+    [0x01, 13,  /^\s*(SET)\s+@(\w+)\s+#([\da-f]{16})\b\s*$/ ],          // SET @var #0000000000000001
+    [0x02,  9,  /^\s*(SET)\s+@(\w+)\s+\$(\w+)\s*$/ ],                   // SET @var $var
     [0x03,  5,  /^\s*CLR\s+@(\w+)\s*$/ ],
     [0x04,  5,  /^\s*INC\s+@(\w+)\s*$/ ],
     [0x05,  5,  /^\s*DEC\s+@(\w+)\s*$/ ],
@@ -35,35 +37,35 @@ const allowedCodes = [
     [0x0f, 13,  /^\s*SET\s+@(\w+)\s+\$\(\$(\w+)\s*\+\s*\$(\w+)\)\s*$/ ],
     [0x10,  5,  /^\s*PSH\s+\$(\w+)\s*$/ ],
     [0x11,  5,  /^\s*POP\s+@(\w+)\s*$/ ],
-    [0x12,  5,  /^\s*JSR\s+:(\w+)\s*$/ ],
+    [0x12,  5,  /^\s*(JSR)\s+:(\w+)\s*$/ ],                             // JSR :function
     [0x13,  1,  /^\s*RET\s*$/ ],
     [0x14,  9,  /^\s*SET\s+@\(\$(\w+)\)\s+\$(\w+)\s*$/ ],
     [0x15, 13,  /^\s*SET\s+@\(\$(\w+)\s*\+\s*\$(\w+)\)\s+\$(\w+)\s*$/ ],
     [0x16,  9,  /^\s*MOD\s+@(\w+)\s+\$(\w+)\s*$/ ],
     [0x17,  9,  /^\s*SHL\s+@(\w+)\s+\$(\w+)\s*$/ ],
     [0x18,  9,  /^\s*SHR\s+@(\w+)\s+\$(\w+)\s*$/ ],
-    [0x1a,  5,  /^\s*JMP\s+:(\w+)\s*$/ ],
-    [0x1b,  6,  /^\s*BZR\s+\$(\w+)\s+:(\w+)\s*$/ ],
-    [0x1e,  6,  /^\s*BNZ\s+\$(\w+)\s+:(\w+)\s*$/ ],
-    [0x1f, 10,  /^\s*BGT\s+\$(\w+)\s+\$(\w+)\s+:(\w+)\s*$/ ],
-    [0x20, 10,  /^\s*BLT\s+\$(\w+)\s+\$(\w+)\s+:(\w+)\s*$/ ],
-    [0x21, 10,  /^\s*BGE\s+\$(\w+)\s+\$(\w+)\s+:(\w+)\s*$/ ],
-    [0x22, 10,  /^\s*BLE\s+\$(\w+)\s+\$(\w+)\s+:(\w+)\s*$/ ],
-    [0x23, 10,  /^\s*BEQ\s+\$(\w+)\s+\$(\w+)\s+:(\w+)\s*$/ ],
-    [0x24, 10,  /^\s*BNE\s+\$(\w+)\s+\$(\w+)\s+:(\w+)\s*$/ ],
+    [0x1a,  5,  /^\s*(JMP)\s+:(\w+)\s*$/ ],                             // JMP :label
+    [0x1b,  6,  /^\s*(BZR)\s+\$(\w+)\s+:(\w+)\s*$/ ],                   // BZR $var :label
+    [0x1e,  6,  /^\s*(BNZ)\s+\$(\w+)\s+:(\w+)\s*$/ ],                   // BZR $var :label
+    [0x1f, 10,  /^\s*(BGT)\s+\$(\w+)\s+\$(\w+)\s+:(\w+)\s*$/ ],         // BGT $var $var :label
+    [0x20, 10,  /^\s*(BLT)\s+\$(\w+)\s+\$(\w+)\s+:(\w+)\s*$/ ],         // BLT $var $var :label
+    [0x21, 10,  /^\s*(BGE)\s+\$(\w+)\s+\$(\w+)\s+:(\w+)\s*$/ ],         // BGE $var $var :label
+    [0x22, 10,  /^\s*(BLE)\s+\$(\w+)\s+\$(\w+)\s+:(\w+)\s*$/ ],         // BLE $var $var :label
+    [0x23, 10,  /^\s*(BEQ)\s+\$(\w+)\s+\$(\w+)\s+:(\w+)\s*$/ ],         // BEQ $var $var :label
+    [0x24, 10,  /^\s*(BNE)\s+\$(\w+)\s+\$(\w+)\s+:(\w+)\s*$/ ],         // BNE $var $var :label
     [0x25,  5,  /^\s*SLP\s+\$(\w+)\s*$/ ],
     [0x26,  5,  /^\s*FIZ\s+\$(\w+)\s*$/ ],
     [0x27,  5,  /^\s*STZ\s+\$(\w+)\s*$/ ],
     [0x28,  1,  /^\s*FIN\s*$/ ],
     [0x29,  1,  /^\s*STP\s*$/ ],
-    [0x2b,  5,  /^\s*ERR\s+:(\w+)\s*$/ ],
+    [0x2b,  5,  /^\s*(ERR)\s+:(\w+)\s*$/ ],                             // ERR :label
     [0x30,  1,  /^\s*PCS\s*$/ ],
-    [0x32,  3,  /^\s*FUN\s+(\w+)\s*$/ ],
-    [0x33,  7,  /^\s*FUN\s+(\w+)\s+\$(\w+)\s*$/ ],
-    [0x34, 11,  /^\s*FUN\s+(\w+)\s+\$(\w+)\s+\$(\w+)\s*$/ ],
-    [0x35,  7,  /^\s*FUN\s+@(\w+)\s+(\w+)\s*$/ ],
-    [0x36, 11,  /^\s*FUN\s+@(\w+)\s+(\w+)\s+\$(\w+)\s*$/ ],
-    [0x37, 15,  /^\s*FUN\s+@(\w+)\s+(\w+)\s+\$(\w+)\s+\$(\w+)\s*$/ ],
+    [0x32,  3,  /^\s*(FUN)\s+(\w+)\s*$/ ],
+    [0x33,  7,  /^\s*(FUN)\s+(\w+)\s+\$(\w+)\s*$/ ],
+    [0x34, 11,  /^\s*(FUN)\s+(\w+)\s+\$(\w+)\s+\$(\w+)\s*$/ ],
+    [0x35,  7,  /^\s*(FUN)\s+@(\w+)\s+(\w+)\s*$/ ],
+    [0x36, 11,  /^\s*(FUN)\s+@(\w+)\s+(\w+)\s+\$(\w+)\s*$/ ],
+    [0x37, 15,  /^\s*(FUN)\s+@(\w+)\s+(\w+)\s+\$(\w+)\s+\$(\w+)\s*$/ ],
     [0x7f,  1,  /^\s*NOP\s*$/ ]
     ];
 
@@ -184,7 +186,8 @@ function asmCodeColor(txt) {
             //loop thru all regex expressions
             for (j=0; j<allowedCodes.length; j++) {
                 //we have a matching regex expression
-                if ((allowedCodes[j][opRegexIDX]).exec(lineBefCom) !== null) {
+                parts=allowedCodes[j][opRegexIDX].exec(lineBefCom);
+                if (parts !== null) {
                     iFound = 1;
                     //codes above 7f are internal use only
                     if (allowedCodes[j][opCodeIDX] > 0x7f) {
@@ -193,26 +196,24 @@ function asmCodeColor(txt) {
                                 ret += lineBefCom;
                                 break;
                             case 0xf1: //is label line
-                                tmp_string = addSpanColorRegex(lineBefCom,/\w+/,asmLabelColor);
+                                tmp_string = addSpanColor(lineBefCom,parts[1],asmLabelColor);
                                 tmp_string = addSpanColorLast(tmp_string,":",asmPropertyColor);
                                 ret += tmp_string;
                                 break;
                             case 0xf3: //declare
-                                tmp_string = addSpanColorRegex(lineBefCom,/\^declare/,asmPropertyColor);
+                                tmp_string = addSpanColor(lineBefCom,parts[1],asmPropertyColor);
                                 ret += tmp_string;
                                 break;
                             case 0xf4: //allocate
-                                tmp_string = addSpanColorRegex(lineBefCom,/\^allocate/,asmPropertyColor);
-                                tmp_string = addSpanColorRegex(tmp_string,/\d+/,asmNumberColor);
+                                tmp_string = addSpanColor(lineBefCom,parts[1],asmPropertyColor);
+                                tmp_string = addSpanColor(tmp_string,parts[3],asmNumberColor);
                                 ret += tmp_string;
                                 break;
                             case 0xf5: //if
                             case 0xf8: //while
                             case 0xfb: //until
-                                tmp_string = addSpanColorRegex(lineBefCom,/[<>=!]+/,asmPropertyColor);
-                                tmp_string = addSpanColor(tmp_string,"if",asmPropertyColor);
-                                tmp_string = addSpanColor(tmp_string,"while",asmPropertyColor);
-                                tmp_string = addSpanColor(tmp_string,"until",asmPropertyColor);
+                                tmp_string = addSpanColor(lineBefCom,parts[3],asmPropertyColor);
+                                tmp_string = addSpanColor(tmp_string,parts[1],asmPropertyColor);
                                 ret += tmp_string;
                                 break;
                             case 0xf6: //else
@@ -223,16 +224,27 @@ function asmCodeColor(txt) {
                             case 0xfd: //break
                                 ret += spanColorAll(lineBefCom,asmPropertyColor);
                                 break;
+                            case 0xfe: //call_ret
+                                tmp_string = addSpanColor(lineBefCom,"=",asmPropertyColor);
+                                tmp_string = addSpanColor(tmp_string,"call",asmPropertyColor);
+                                tmp_string = addSpanColor(tmp_string,parts[2],asmLabelColor);
+                                ret += tmp_string;
+                                break;
+                            case 0xff: //call
+                                tmp_string = addSpanColor(lineBefCom,"call",asmPropertyColor)
+                                tmp_string = addSpanColor(tmp_string,parts[1],asmLabelColor);
+                                ret += tmp_string;
+                                break;
                             default: //is comment,
                                 ret += spanColorAll(lineBefCom,asmCommentColor);
                         }
                     } else { //we have an instruction line. Process accordingly
                         switch (allowedCodes[j][opCodeIDX]) {
                             case 0x01:
-                                tmp_string = addSpanColorRegex(lineBefCom,/\b\w{3}\b/,asmInstructionColor);
+                                tmp_string = addSpanColor(lineBefCom,parts[1],asmInstructionColor);
                                 tmp_string = addSpanColor(tmp_string,"@",asmPropertyColor);
                                 tmp_string = addSpanColor(tmp_string,"#",asmPropertyColor);
-                                tmp_string = addSpanColorRegex(tmp_string,/[\da-f]{16}/,asmNumberColor);
+                                tmp_string = addSpanColor(tmp_string,parts[3],asmNumberColor);
                                 ret += tmp_string;
                                 break;
                             case 0x02:
@@ -297,19 +309,17 @@ function asmCodeColor(txt) {
                             case 0x12:
                             case 0x1a:
                             case 0x2b:
-                                parts = lineBefCom.split(":");
-                                tmp_string = addSpanColorRegex(parts[0],/\b\w{3}\b/,asmInstructionColor)
-                                             + addSpanColor(":",":",asmPropertyColor)
-                                             + spanColorAll(parts[1],asmLabelColor);
+                                tmp_string = addSpanColor(lineBefCom,":",asmPropertyColor);
+                                tmp_string = addSpanColor(tmp_string,parts[1],asmInstructionColor);
+                                tmp_string = addSpanColor(tmp_string,parts[2],asmLabelColor);
                                 ret += tmp_string;
                                 break;
                             case 0x1b:
                             case 0x1e:
-                                parts = lineBefCom.split(":");
-                                tmp_string = addSpanColorRegex(parts[0],/\b\w{3}\b/,asmInstructionColor);
-                                tmp_string = addSpanColor(tmp_string,"$",asmPropertyColor)
-                                             + addSpanColor(":",":",asmPropertyColor)
-                                             + spanColorAll(parts[1],asmLabelColor);
+                                tmp_string = addSpanColor(lineBefCom,":",asmPropertyColor);
+                                tmp_string = addSpanColor(tmp_string,"$",asmPropertyColor);
+                                tmp_string = addSpanColor(tmp_string,parts[1],asmInstructionColor);
+                                tmp_string = addSpanColor(tmp_string,parts[3],asmLabelColor);
                                 ret += tmp_string;
                                 break;
                             case 0x1f:
@@ -318,19 +328,16 @@ function asmCodeColor(txt) {
                             case 0x22:
                             case 0x23:
                             case 0x24:
-                                parts = lineBefCom.split(":");
-                                tmp_string = addSpanColorRegex(parts[0],/\b\w{3}\b/,asmInstructionColor);
+                                tmp_string = addSpanColor(lineBefCom,":",asmPropertyColor);
+                                tmp_string = addSpanColor(tmp_string,parts[1],asmInstructionColor);
                                 tmp_string = addSpanColor(tmp_string,"$",asmPropertyColor);
-                                tmp_string =  addSpanColorLast(tmp_string,"$",asmPropertyColor)
-                                            + addSpanColor(":",":",asmPropertyColor)
-                                            + spanColorAll(parts[1],asmLabelColor);
+                                tmp_string = addSpanColor(tmp_string,parts[4],asmLabelColor);
                                 ret += tmp_string;
                                 break;
                             case 0x32:
-                                parts=/(\w+)\s+(\w+)/g.exec(lineBefCom);
                                 tmp_string = addSpanColor(lineBefCom,parts[1],asmInstructionColor);
                                 for (var k=0, fFound = 0; k<allowedFunctions.length; k++) {
-                                    if (lineBefCom.search(allowedFunctions[k][fnNameIDX]) != -1) {
+                                    if (parts[2] == (allowedFunctions[k][fnNameIDX])) {
                                         fFound = 1;
                                         break;
                                     }
@@ -342,10 +349,9 @@ function asmCodeColor(txt) {
                                 ret += tmp_string
                                 break;
                             case 0x33:
-                                parts=/(\w+)\s+(\w+)/g.exec(lineBefCom);
                                 tmp_string = addSpanColor(lineBefCom,parts[1],asmInstructionColor);
                                 for (var k=0, fFound = 0; k<allowedFunctions.length; k++) {
-                                    if (lineBefCom.search(allowedFunctions[k][fnNameIDX]) != -1) {
+                                    if (parts[2] == (allowedFunctions[k][fnNameIDX])) {
                                         fFound = 1;
                                         break;
                                     }
@@ -358,10 +364,9 @@ function asmCodeColor(txt) {
                                 ret += tmp_string;
                                 break;
                             case 0x34:
-                                parts=/(\w+)\s+(\w+)/g.exec(lineBefCom);
                                 tmp_string = addSpanColor(lineBefCom,parts[1],asmInstructionColor);
                                 for (var k=0, fFound = 0; k<allowedFunctions.length; k++) {
-                                    if (lineBefCom.search(allowedFunctions[k][fnNameIDX]) != -1) {
+                                    if (parts[2] == (allowedFunctions[k][fnNameIDX])) {
                                         fFound = 1;
                                         break;
                                     }
@@ -375,11 +380,10 @@ function asmCodeColor(txt) {
                                 ret += tmp_string;
                                 break;
                             case 0x35:
-                                parts=/(\w+)\s+@(\w+)\s+(\w+)/g.exec(lineBefCom);
                                 tmp_string = addSpanColor(lineBefCom,parts[1],asmInstructionColor);
                                 tmp_string = addSpanColor(tmp_string,"@",asmPropertyColor)
                                 for (var k=0, fFound = 0; k<allowedFunctions.length; k++) {
-                                    if (lineBefCom.search(allowedFunctions[k][fnNameIDX]) != -1) {
+                                    if (parts[3] == (allowedFunctions[k][fnNameIDX])) {
                                         fFound = 1;
                                         break;
                                     }
@@ -391,11 +395,10 @@ function asmCodeColor(txt) {
                                 ret += tmp_string;
                                 break;
                              case 0x37:
-                                parts=/(\w+)\s+@(\w+)\s+(\w+)/g.exec(lineBefCom);
                                 tmp_string = addSpanColor(lineBefCom,parts[1],asmInstructionColor);
                                 tmp_string = addSpanColor(tmp_string,"@",asmPropertyColor)
                                 for (var k=0, fFound = 0; k<allowedFunctions.length; k++) {
-                                    if (lineBefCom.search(allowedFunctions[k][fnNameIDX]) != -1) {
+                                    if (parts[3] == (allowedFunctions[k][fnNameIDX])) {
                                         fFound = 1;
                                         break;
                                     }

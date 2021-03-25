@@ -32,11 +32,18 @@
             float: left;
             width: 50%;
         }
-
         .inc_height {
             min-height: 150px;
         }
-
+        .overlay_txt {
+            min-height: 150px;
+            position: absolute;
+            opacity: 0.2;
+        }
+        .micro {
+            margin: 0px;
+            padding: 0px;
+        }
         textarea {
             width: calc(100% - 20px);
             padding: 5px 5px 5px 5px;
@@ -80,6 +87,50 @@ function createVar(){
     var b = Tools.longArray2SmartContractor(varName, a);
     window.prompt("Create variable codes: Ctrl+C, enter", b);
 }
+
+function do_overlay(){
+    var elem = document.getElementById('codeInput');
+    if (document.getElementById('overlay').checked) {
+        document.getElementById('rigth_div').style.width="100%";
+        elem.className = "overlay_txt";
+        var y= document.getElementById('codeOutput').offsetTop-1;
+        elem.style.top = (document.getElementById('codeOutput').offsetTop-1) +"px";
+        document.getElementById('codehere').innerHTML="";
+    } else {
+        document.getElementById('rigth_div').style.width="50%";
+        elem.className = "inc_height";
+        document.getElementById('codehere').innerHTML="Code here";
+    }
+}
+function ov_move(val){
+    elem=document.getElementById('codeInput');
+    var x = elem.style.top;
+    elem.style.top= (parseInt(x.replace("px",""))+val).toString()+"px";
+}
+
+function enabletabs(){
+    var el = document.getElementById("codeInput");
+    if (document.getElementById('enabletab').checked){
+        el.addEventListener("keydown", keytab);
+    } else {
+        el.removeEventListener('keydown', keytab);
+    }
+}
+function keytab(e){
+    if (e.keyCode === 9) { // tab was pressed
+        var start = e.target.selectionStart;
+        var end = e.target.selectionEnd;
+        var oldValue = e.target.value;
+        // replace point and change input value
+        var newValue = oldValue.slice(0, start) + '    ' + oldValue.slice(end)
+        e.target.value = newValue;
+        // replace cursor
+        e.target.selectionStart = e.target.selectionEnd = start + 4;
+        // prevent the focus lose
+        event.preventDefault();
+        return false;
+    }
+}
 </script>
 </head>
 <body onload='javascript:textKeyUp()'>
@@ -90,40 +141,49 @@ function createVar(){
 <br> <label><input id="preprocess" type="checkbox" onclick="textKeyUp()" > Process if's and loop's</label>
 <br> <label><input id="highlight" type="checkbox" onclick="textKeyUp()" checked="true"> Syntax highlight on output</label>
 <br> <label><input id="onthefly" type="checkbox" onclick="textKeyUp()" checked="true"> Refresh output on-the-fly</label>
+<br> <label><input id="enabletab" type="checkbox" onclick="enabletabs()"> Enable Tab to add spaces, but loses undo histtory</label>
+<br> <label><input id="overlay" type="checkbox" onclick="do_overlay()" > Overlay output on textarea.</label>&nbsp;&nbsp;&nbsp;Fine adjust: <button class="micro" onClick="javascript:ov_move(1);">↓</button> <button class="micro" onClick="javascript:ov_move(-1);">↑</button>
 <br> <button id="createtext" onClick="javascript: createVar();">Create string</button>
     </div>
 
-    <div class="left"> 
-        <h3>Code here:</h3>
+<div>
+    <div class="left">
+        <h3>Highligthed code:</h3>
+        <div class="code" id="codeOutput">
+        </div>
+
+    </div>
+
+    <div id="rigth_div" class="right">
+        <h3 id="codehere">Code here:</h3>
+        <div>
         <textarea id="codeInput" class="inc_height" spellcheck="false" wrap="off" onkeyup='javascript:textKeyUp();'>SET @0x00 #0000000000000000
 SET @0x08 #0000000000000008
 SET @0x0a #0000000000 00000a
 
-PCS
-if eax <= 0x08
-add $eax $0x08
-else
-sub $eax $0x08
-endif
+repeat
+    FUN A_to_Tx_after_Timestamp $LastTx
+    FUN @eax check_A_Is_Zero
+    if eax == 0
+        break
+    endif
 
-FUN A_to_Tx_after_Timestamp $LastTx
-FUN @eax check_A_Is_Zero
-BNZ $eax :next
+    ; Do stuff for new transactions
+
+loop
+
+; Do stuff after all tx has been processed
+
 FIN
         </textarea>
         <br/><br/>
         <footer>Releases:<br/>
-             • March 2021 • <a href="https://github.com/deleterium/BurstAT">deleterium</a> • Syntax highlightning<br/>
+             • March 2021 • <a href="https://github.com/deleterium/BurstAT">deleterium</a> • Syntax highlighting • Loops and conditionals preprocessor • Overlay mode<br/>
         </footer>
 
-    </div>
-
-    <div class="right">
-        <h3>Highligthed code:</h3>
-        <div class="code" id="codeOutput">
         </div>
     </div>
+</div>
 
-    </div>
 </body>
 </html>

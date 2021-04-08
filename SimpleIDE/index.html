@@ -6,64 +6,9 @@
     <script src="highlight.js"></script>
     <script src="preprocessor.js"></script>
     <script src="tools.js"></script>
-
-    <style>
-        body {
-            font-size: 100%;
-        }
-        h1 {
-            text-align: center;
-        }
-        h3 {
-            margin-bottom: 5px;
-        }
-        .code {
-            font-family: "Lucida Console", "Courier New", monospace;
-            padding: 5px 5px 5px 5px;
-            white-space: pre;
-            word-wrap: break-word;
-        }
-        .right {
-            float: right;
-            width: 50%;
-            min-height: 100px;
-        }
-        .left {
-            float: left;
-            width: 50%;
-        }
-        .inc_height {
-            min-height: 150px;
-        }
-        .overlay_txt {
-            min-height: 150px;
-            position: absolute;
-            opacity: 0.2;
-        }
-        .micro {
-            margin: 0px;
-            padding: 0px;
-        }
-        textarea {
-            width: calc(100% - 20px);
-            padding: 5px 5px 5px 5px;
-            font-family: "Lucida Console", "Courier New", monospace;
-            overflow: auto;
-            resize: none;
-            font-size: 100%;
-        }
-        button {
-            margin: 20px 0px 20px 0px;
-            padding: 5px 20px 5px 20px;
-        }
-        footer {
-            font-size: 0.875em;
-            padding: 50px 50px 0 0;
-        }
-    </style>
+	<link rel="stylesheet" href="style.css"> 
 
 <script>
-
 function textKeyUp () {
     var elem = document.getElementById("codeInput");
     var text = elem.value;
@@ -134,17 +79,26 @@ function keytab(e){
 </script>
 </head>
 <body onload='javascript:textKeyUp()'>
- 
-    <div>
-        <h1>Burstcoin AT IDE</h1>
 
-<br> <label><input id="preprocess" type="checkbox" onclick="textKeyUp()" > Process if's and loop's</label>
-<br> <label><input id="highlight" type="checkbox" onclick="textKeyUp()" checked="true"> Syntax highlight on output</label>
-<br> <label><input id="onthefly" type="checkbox" onclick="textKeyUp()" checked="true"> Refresh output on-the-fly</label>
-<br> <label><input id="enabletab" type="checkbox" onclick="enabletabs()"> Enable Tab to add spaces, but loses undo histtory</label>
-<br> <label><input id="overlay" type="checkbox" onclick="do_overlay()" > Overlay output on textarea.</label>&nbsp;&nbsp;&nbsp;Fine adjust: <button class="micro" onClick="javascript:ov_move(1);">↓</button> <button class="micro" onClick="javascript:ov_move(-1);">↑</button>
-<br> <button id="createtext" onClick="javascript: createVar();">Create string</button>
-    </div>
+<h1>Burstcoin AT IDE</h1> 
+<div class="container">
+	
+	<input id="preprocess" type="checkbox" onclick="textKeyUp()" >
+	<input id="highlight" type="checkbox" onclick="textKeyUp()" checked="true">
+	<input id="onthefly" type="checkbox" onclick="textKeyUp()" checked="true">
+	<input id="enabletab" type="checkbox" onclick="enabletabs()">
+	<input id="overlay" type="checkbox" onclick="do_overlay()" >
+	
+	<button id="createtext" onClick="javascript: createVar();">Create string</button>
+	
+	<label id="bt1" for="preprocess" title="Create output compatible with SmartContractor compiler"> Process code</label>
+	<label id="bt2" for="highlight" title="Toggle colors"> Syntax highlight</label>
+	<label id="bt3" for="onthefly" title="Process syntax rules on every key press"> Refresh on-the-fly</label>
+	<label id="bt4" for="enabletab" title="Allow tabs breaks textarea undo history"> Allow tabs</label>
+	<label id="bt5" for="overlay"> Overlay output</label>
+	 
+	<button class="arrow" onClick="javascript:ov_move(1);">↓</button> <button class="arrow" onClick="javascript:ov_move(-1);">↑</button>
+</div>
 
 <div>
     <div class="left">

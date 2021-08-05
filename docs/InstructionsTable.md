@@ -39,12 +39,12 @@ Table showing machine instructions, operational codes, usage and comments. Examp
 | 0x22 | BLE | BLE $addr1 $addr2 :label | BLE_DAT | addr1,addr2,offset | if $addr1 <= $addr2 then pc += offset |
 | 0x23 | BEQ | BEQ $addr1 $addr2 :label | BEQ_DAT | addr1,addr2,offset | if $addr1 == $addr2 then pc += offset |
 | 0x24 | BNE | BNE $addr1 $addr2 :label | BNE_DAT | addr1,addr2,offset | if $addr1 != $addr2 then pc += offset |
-| 0x25 | SLP | SLP $addr | SLP_DAT | addr | • sleep until $addr |
+| 0x25 | SLP | SLP $addr | SLP_DAT | addr | • sleep $addr blocks |
 | 0x26 | FIZ | FIZ $addr | FIZ_DAT | addr | if $addr == 0 then pc = pcs and stop |
 | 0x27 | STZ | STZ $addr | STZ_DAT | addr | if $addr == 0 then stop |
 | 0x28 | FIN | FIN | FIN_IMD |  | pc = pcs and stop |
 | 0x29 | STP | STP | STP_IMD |  | stop |
-| 0x2a |  |  | SLP_IMD |  | sleep until the next block |
+| 0x2a |  |  | SLP_IMD |  | •• sleep until the next block |
 | 0x2b | ERR | ERR :label | ERR_ADR | addr | pce = addr |
 | 0x30 | PCS | PCS | SET_PCS |  | pcs = pc + 1 |
 | 0x32 | FUN | FUN functionName | EXT_FUN | func | func( ) |
@@ -54,6 +54,7 @@ Table showing machine instructions, operational codes, usage and comments. Examp
 | 0x36 | FUN | FUN @addr1 functionName $addr2 | EXT_FUN_RET_DAT | func,addr1,addr2 | @addr1 = func( $addr2 ) |
 | 0x37 | FUN | FUN @addr1 functionName $addr2 $addr3 | EXT_FUN_RET_DAT_2 | func,addr1,addr2,addr3 | @addr1 = func( $addr2, $addr3 ) |
 
-• Number of blocks to sleep. One to wait until next block.
+• Number of blocks to sleep. One, zero or any negative number to wait until next block.
+•• Not implemented in signum. If used, same behaviour as STP_IMD.
 
 Check also [function names page](./FunctionTables.md) to see all available options to use with FUN instruction.

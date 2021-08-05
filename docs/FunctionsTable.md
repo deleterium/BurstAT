@@ -42,11 +42,6 @@ Functions to be used with `FUN` instruction, hex codes `0x32` to `0x37`.
 | 0x012c | AND_B_with_A | FUN AND_B_with_A | AND_B_with_A | sets B to B & A (bitwise AND) |
 | 0x012d | XOR_A_with_B | FUN XOR_A_with_B | XOR_A_with_B | sets A to A ^ B (bitwise XOR) |
 | 0x012e | XOR_B_with_A | FUN XOR_B_with_A | XOR_B_with_A | sets B to B ^ A (bitwise XOR) |
-
-### Pending implementation
-
-| Hex | Function name | Example | API function name (CIYAM docs) | Operation (and comments) |
-| --- | --- | --- | --- | --- |
 | 0x0140 | add_A_to_B | FUN add_A_to_B | Add_A_To_B | adds A to B (result in B) |
 | 0x0141 | add_B_to_A | FUN add_B_to_A | Add_B_To_A | adds B to A (result in A) |
 | 0x0142 | sub_A_from_B | FUN sub_A_from_B | Sub_A_From_B | subs A from B (result in B) |
@@ -56,7 +51,7 @@ Functions to be used with `FUN` instruction, hex codes `0x32` to `0x37`.
 | 0x0146 | div_A_by_B | FUN div_A_by_B | Div_A_By_B | • divides A by B (result in B) |
 | 0x0147 | div_B_by_A | FUN div_B_by_A | Div_B_By_A | • divides B by A (result in A) |
 
-• These functions could cause a divide by zero error which would put the machine in error
+• On division by zero, instruction does nothing. No error handling.
 
 ## 0x0200..0x02ff - Functions that perform hash operations
 
@@ -86,12 +81,12 @@ Functions to be used with `FUN` instruction, hex codes `0x32` to `0x37`.
 | 0x030a | B_to_Address_of_Tx_in_A | FUN B_to_Address_of_Tx_in_A | B_To_Address_Of_Tx_In_A | if A is a valid tx then B set to the tx address |
 | 0x030b | B_to_Address_of_Creator | FUN B_to_Address_of_Creator | B_To_Address_Of_Creator | sets B to the address of the AT's creator |
 
-• Tx type is 0 for a normal tx and 1 for a message tx <br>
+• If tx has an unencrypted message, returns 1. If there is no message or it is encrypted, returns 0.<br>
 •• Amount will always have the minimum fee subtracted from it<br>
-••• A random id is a 64 bit signed value (that is always returned positive) and this is a blocking function. The contract may be stopped until there are entropy to generate the number, from zero (if there are many tx) to 15 blocks (if no tx, only mining) <br>
+••• A random id is a 64 bit signed value. The contract will be sleeping during 15 blocks (main net) to generate a number.<br>
 •••• If the tx does not include a message tx then this will zero out the B value
 
-Note: For all cases where A isnot a valid tx @addr will be set to 0xffffffffffffffff
+Note: For all cases where A is not a valid tx @addr will be set to -1 (0xffffffffffffffff)
 
 ## 0x0400..0x04ff - Generic functions that check balances and perform ops
 
@@ -100,11 +95,12 @@ Note: For all cases where A isnot a valid tx @addr will be set to 0xffffffffffff
 | 0x0400 | get_Current_Balance | FUN @addr get_Current_Balance | Get_Current_Balance | sets @addr to current balance of the AT |
 | 0x0401 | get_Previous_Balance | FUN @addr get_Previous_Balance | Get_Previous_Balance | • sets @addr to the balance it had last had when running |
 | 0x0402 | send_to_Address_in_B | FUN send_to_Address_in_B $addr | Send_To_Address_In_B | •• if B is a valid address then send it $addr amount |
-| 0x0403 | send_All_to_Address_in_B | FUN send_All_to_Address_in_B | Send_All_To_Address_In_B | if B is a valid address then send it the entire balance |
-| 0x0404 | send_Old_to_Address_in_B | FUN send_Old_to_Address_in_B | Send_Old_To_Address_In_B | •• if B is a valid address then send it the old balance |
+| 0x0403 | send_All_to_Address_in_B | FUN send_All_to_Address_in_B | Send_All_To_Address_In_B | ••• if B is a valid address then send it the entire current balance |
+| 0x0404 | send_Old_to_Address_in_B | FUN send_Old_to_Address_in_B | Send_Old_To_Address_In_B | •• if B is a valid address then send it the previous balance |
 | 0x0405 | send_A_to_Address_in_B | FUN send_A_to_Address_in_B | Send_A_To_Address_In_B | if B is a valid address then send it A as a message |
-| 0x0406 | add_Minutes_to_Timestamp | FUN @addr1 add_Minutes_to_Timestamp $addr2 $addr3 | Add_Minutes_To_Timestamp | ••• set @addr1 to timestamp $addr2 plus $addr3 minutes |
+| 0x0406 | add_Minutes_to_Timestamp | FUN @addr1 add_Minutes_to_Timestamp $addr2 $addr3 | Add_Minutes_To_Timestamp | •••• set @addr1 to timestamp $addr2 plus $addr3 minutes |
 
-• This amount does not include any additional amounts sent to the AT between "execution events"<br>
-•• If this amount is greater than the AT's balance then it will only send the current balance amount<br>
-••• The API is expected to base this timestamp according to the "average block time" for the blockchain<br>
+• This ih the amount when contract was stopped/freezed/finished last time.<br>
+•• If this amount is greater than the current balance then it will be sent the total current balance amount<br>
+••• All balance will be sent and the contract will be stopped due to out-of-gas. Resume will occurs when a new tx arrive<br>
+•••• The API is expected to base this timestamp according to the "average block time" for the blockchain, 4 minutes for signum.<br>
